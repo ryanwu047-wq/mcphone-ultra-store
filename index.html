@@ -40,12 +40,15 @@ main{max-width:1200px;margin:0 auto;padding:32px 24px}
 .upload-guide ol{padding-left:20px}
 .upload-guide li{color:var(--text-dim);font-size:14px;line-height:1.8;margin-bottom:8px}
 .upload-guide code{background:var(--bg-input);padding:2px 6px;border-radius:4px;font-size:13px;color:var(--success)}
+.bot-warning{display:none;background:rgba(233,69,96,.1);border:1px solid var(--accent);border-radius:8px;padding:16px;margin-bottom:24px;color:var(--accent);text-align:center}
+.bot-warning.show{display:block}
 footer{text-align:center;padding:32px;color:var(--text-dim);font-size:13px;border-top:1px solid var(--border);margin-top:64px}
 footer a{color:var(--accent);text-decoration:none}
 @media(max-width:640px){.nav-inner{height:auto;padding:8px 0;gap:4px;flex-wrap:wrap}.logo{margin-right:16px;font-size:17px}.nav-btn{padding:6px 10px;font-size:13px}main{padding:16px}.page-title{font-size:22px}.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+<div class="bot-warning" id="botWarning">⚠️ 偵測到異常存取，請使用一般瀏覽器</div>
 <header>
   <div class="nav-inner">
     <a class="logo" href="./">📱 MCphone Ultra</a>
@@ -75,15 +78,50 @@ footer a{color:var(--accent);text-decoration:none}
       <li>把檔案拖進去，點「Commit changes」</li>
       <li>完成！刷新這個頁面就會看到新檔案</li>
     </ol>
-    <p style="color:var(--text-dim);font-size:13px;margin-top:12px">💡 小說請上傳 .txt 檔；應用請上傳 .jar 或 .zip 檔。</p>
+    <p style="color:var(--text-dim);font-size:13px;margin-top:12px">💡 小說請上傳 .txt 檔；應用請上傳 .jar 或 .zip 檔。CDN 快取最多 12 小時，新上傳的檔案可能需要一段時間才會顯示。</p>
   </div>
 </main>
 
 <footer>
-  <p>MCphone Ultra 資源庫 · GitHub Pages · <a href="https://github.com/ryanwu047-wq/mcphone-ultra" target="_blank">MCphone Ultra Mod</a></p>
+  <p>MCphone Ultra 資源庫 · GitHub Pages + jsDelivr CDN · <a href="https://github.com/ryanwu047-wq/mcphone-ultra" target="_blank">MCphone Ultra Mod</a></p>
 </footer>
 
 <script>
+// ========== Bot 防護 ==========
+(function(){
+  var isBot = false;
+  // 檢查 webdriver
+  if(navigator.webdriver) isBot = true;
+  // 檢查 headless
+  if(navigator.plugins && navigator.plugins.length === 0) isBot = true;
+  // 檢查語言
+  if(!navigator.language) isBot = true;
+  // 檢查線上狀態
+  if(typeof navigator.onLine === 'undefined') isBot = true;
+  
+  if(isBot){
+    document.getElementById('botWarning').classList.add('show');
+    // 不阻止載入，但標記為 bot，降低 API 呼叫頻率
+    window.__isBot = true;
+  }
+})();
+
+// ========== 簡單 Rate Limiting（本地端）==========
+var RateLimit = {
+  maxRequests: 30,
+  windowMs: 60000, // 1 分鐘
+  requests: [],
+  check: function(){
+    var now = Date.now();
+    this.requests = this.requests.filter(function(t){ return now - t < this.windowMs; }.bind(this));
+    if(this.requests.length >= this.maxRequests){
+      return false;
+    }
+    this.requests.push(now);
+    return true;
+  }
+};
+
 const REPO = 'ryanwu047-wq/mcphone-ultra-store';
 const BRANCH = 'main';
 
@@ -104,20 +142,42 @@ function getFileIcon(name){
   return '📁';
 }
 
+// 用 jsDelivr API 列出檔案（無速率限制，CORS 友好）
 async function loadFolder(folder, gridId, countId){
   const grid = document.getElementById(gridId);
   const count = document.getElementById(countId);
+  
+  // Rate limit 檢查
+  if(!RateLimit.check()){
+    grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⏳</div><div class="empty-state-text">請求過於頻繁，請稍後再試</div></div>';
+    return;
+  }
+  
   try{
-    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${folder}?ref=${BRANCH}`);
+    // jsDelivr API：取得倉庫完整檔案列表
+    const res = await fetch(`https://data.jsdelivr.com/v1/packages/gh/${REPO}@${BRANCH}?structure=flat`);
     if(!res.ok) throw new Error('API error');
-    const files = await res.json();
-    const actualFiles = files.filter(f => f.type === 'file' && f.name !== '.gitkeep');
-    count.textContent = actualFiles.length;
-    if(actualFiles.length === 0){
+    const data = await res.json();
+    
+    // 篩選目標資料夾的檔案
+    const prefix = folder + '/';
+    const files = (data.files || [])
+      .filter(function(f){ return f.name.startsWith(prefix) && !f.name.endsWith('.gitkeep'); })
+      .map(function(f){
+        return {
+          name: f.name.substring(prefix.length),
+          size: f.size || 0,
+          download_url: `https://cdn.jsdelivr.net/gh/${REPO}@${BRANCH}/${f.name}`
+        };
+      });
+    
+    count.textContent = files.length;
+    if(files.length === 0){
       grid.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📂</div><div class="empty-state-text">還沒有檔案，<a href="https://github.com/ryanwu047-wq/mcphone-ultra-store/tree/main/${folder}" target="_blank" style="color:var(--accent)">成為第一個上傳的人</a>！</div></div>`;
       return;
     }
-    grid.innerHTML = actualFiles.map(f => `
+    grid.innerHTML = files.map(function(f){
+      return `
       <div class="card">
         <div class="card-icon">${getFileIcon(f.name)}</div>
         <div class="card-body">
@@ -128,13 +188,15 @@ async function loadFolder(folder, gridId, countId){
           <span class="card-size">${formatSize(f.size)}</span>
           <a class="download-btn" href="${f.download_url}" download>下載</a>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   }catch(e){
-    grid.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">載入失敗，請稍後再試</div></div>`;
+    // 後備方案：直接連結到 GitHub 資料夾
+    grid.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📂</div><div class="empty-state-text">載入失敗，<a href="https://github.com/ryanwu047-wq/mcphone-ultra-store/tree/main/${folder}" target="_blank" style="color:var(--accent)">點這裡到 GitHub 下載</a></div></div>`;
   }
 }
 
+// 載入檔案列表
 loadFolder('novels', 'novels-grid', 'novels-count');
 loadFolder('apps', 'apps-grid', 'apps-count');
 </script>
