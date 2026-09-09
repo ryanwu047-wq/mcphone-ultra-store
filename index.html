@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCphone Ultra 資源庫</title>
+<style>
+:root{--bg:#1a1a2e;--bg-card:#16213e;--bg-input:#0f3460;--accent:#e94560;--accent-hover:#ff6b81;--text:#eaeaea;--text-dim:#a0a0b0;--border:#2a2a4a;--success:#4ecca3}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{background:var(--bg-card);border-bottom:2px solid var(--accent);padding:0 24px;position:sticky;top:0;z-index:100}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;height:60px;gap:8px}
+.logo{font-size:20px;font-weight:bold;color:var(--accent);margin-right:32px;text-decoration:none;white-space:nowrap}
+.nav-btn{background:none;border:none;color:var(--text-dim);font-size:15px;padding:8px 16px;border-radius:6px;cursor:pointer;transition:all .2s;white-space:nowrap;text-decoration:none;display:inline-block}
+.nav-btn:hover{background:var(--bg-input);color:var(--text)}
+.nav-spacer{flex:1}
+.github-link{color:var(--text-dim);text-decoration:none;font-size:14px}
+.github-link:hover{color:var(--accent)}
+main{max-width:1200px;margin:0 auto;padding:32px 24px}
+.page-title{font-size:28px;margin-bottom:8px}
+.page-desc{color:var(--text-dim);margin-bottom:32px;font-size:15px}
+.section-title{font-size:20px;margin:32px 0 16px;display:flex;align-items:center;gap:8px}
+.section-count{background:var(--accent);color:white;font-size:12px;padding:2px 8px;border-radius:10px;font-weight:bold}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(233,69,96,.15)}
+.card-icon{width:100%;height:120px;background:var(--bg-input);display:flex;align-items:center;justify-content:center;font-size:48px}
+.card-body{padding:16px;flex:1;display:flex;flex-direction:column}
+.card-title{font-size:16px;font-weight:bold;margin-bottom:4px;word-break:break-all}
+.card-meta{font-size:13px;color:var(--text-dim);margin-bottom:8px}
+.card-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.download-btn{background:var(--accent);color:white;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:bold;text-decoration:none;display:inline-block}
+.download-btn:hover{background:var(--accent-hover)}
+.card-size{font-size:12px;color:var(--text-dim)}
+.empty-state{text-align:center;padding:64px 24px;color:var(--text-dim);grid-column:1/-1}
+.empty-state-icon{font-size:64px;margin-bottom:16px}
+.loading{text-align:center;padding:32px;color:var(--text-dim)}
+.upload-guide{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-top:48px}
+.upload-guide h3{color:var(--accent);margin-bottom:12px;font-size:18px}
+.upload-guide ol{padding-left:20px}
+.upload-guide li{color:var(--text-dim);font-size:14px;line-height:1.8;margin-bottom:8px}
+.upload-guide code{background:var(--bg-input);padding:2px 6px;border-radius:4px;font-size:13px;color:var(--success)}
+footer{text-align:center;padding:32px;color:var(--text-dim);font-size:13px;border-top:1px solid var(--border);margin-top:64px}
+footer a{color:var(--accent);text-decoration:none}
+@media(max-width:640px){.nav-inner{height:auto;padding:8px 0;gap:4px;flex-wrap:wrap}.logo{margin-right:16px;font-size:17px}.nav-btn{padding:6px 10px;font-size:13px}main{padding:16px}.page-title{font-size:22px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="nav-inner">
+    <a class="logo" href="./">📱 MCphone Ultra</a>
+    <a class="nav-btn" href="#novels">📚 小說</a>
+    <a class="nav-btn" href="#apps">📦 應用</a>
+    <div class="nav-spacer"></div>
+    <a class="github-link" href="https://github.com/ryanwu047-wq/mcphone-ultra-store" target="_blank">GitHub</a>
+  </div>
+</header>
+
+<main>
+  <h1 class="page-title">📚 資源庫</h1>
+  <p class="page-desc">下載小說在遊戲內離線閱讀，或安裝其他玩家製作的手機應用。</p>
+
+  <h2 class="section-title" id="novels">📖 小說 <span class="section-count" id="novels-count">0</span></h2>
+  <div class="grid" id="novels-grid"><div class="loading">⏳ 載入中...</div></div>
+
+  <h2 class="section-title" id="apps">📦 應用 <span class="section-count" id="apps-count">0</span></h2>
+  <div class="grid" id="apps-grid"><div class="loading">⏳ 載入中...</div></div>
+
+  <div class="upload-guide">
+    <h3>📤 如何上傳小說或應用？</h3>
+    <ol>
+      <li>打開 <a href="https://github.com/ryanwu047-wq/mcphone-ultra-store" target="_blank" style="color:var(--accent)">GitHub 倉庫</a></li>
+      <li>進入 <code>novels/</code> 資料夾（上傳小說）或 <code>apps/</code> 資料夾（上傳應用）</li>
+      <li>點右上「Add file」→「Upload files」</li>
+      <li>把檔案拖進去，點「Commit changes」</li>
+      <li>完成！刷新這個頁面就會看到新檔案</li>
+    </ol>
+    <p style="color:var(--text-dim);font-size:13px;margin-top:12px">💡 小說請上傳 .txt 檔；應用請上傳 .jar 或 .zip 檔。</p>
+  </div>
+</main>
+
+<footer>
+  <p>MCphone Ultra 資源庫 · GitHub Pages · <a href="https://github.com/ryanwu047-wq/mcphone-ultra" target="_blank">MCphone Ultra Mod</a></p>
+</footer>
+
+<script>
+const REPO = 'ryanwu047-wq/mcphone-ultra-store';
+const BRANCH = 'main';
+
+function formatSize(b){
+  if(!b) return '';
+  if(b < 1024) return b + ' B';
+  if(b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(1) + ' MB';
+}
+
+function getFileIcon(name){
+  const ext = name.split('.').pop().toLowerCase();
+  if(ext === 'txt') return '📄';
+  if(ext === 'jar' || ext === 'zip') return '📦';
+  if(ext === 'png' || ext === 'jpg' || ext === 'jpeg' || ext === 'webp') return '🖼️';
+  if(ext === 'mp3' || ext === 'wav' || ext === 'ogg') return '🎵';
+  if(ext === 'mp4' || ext === 'mkv' || ext === 'avi') return '🎬';
+  return '📁';
+}
+
+async function loadFolder(folder, gridId, countId){
+  const grid = document.getElementById(gridId);
+  const count = document.getElementById(countId);
+  try{
+    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${folder}?ref=${BRANCH}`);
+    if(!res.ok) throw new Error('API error');
+    const files = await res.json();
+    const actualFiles = files.filter(f => f.type === 'file' && f.name !== '.gitkeep');
+    count.textContent = actualFiles.length;
+    if(actualFiles.length === 0){
+      grid.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📂</div><div class="empty-state-text">還沒有檔案，<a href="https://github.com/ryanwu047-wq/mcphone-ultra-store/tree/main/${folder}" target="_blank" style="color:var(--accent)">成為第一個上傳的人</a>！</div></div>`;
+      return;
+    }
+    grid.innerHTML = actualFiles.map(f => `
+      <div class="card">
+        <div class="card-icon">${getFileIcon(f.name)}</div>
+        <div class="card-body">
+          <div class="card-title">${f.name}</div>
+          <div class="card-meta">${formatSize(f.size)}</div>
+        </div>
+        <div class="card-footer">
+          <span class="card-size">${formatSize(f.size)}</span>
+          <a class="download-btn" href="${f.download_url}" download>下載</a>
+        </div>
+      </div>
+    `).join('');
+  }catch(e){
+    grid.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">載入失敗，請稍後再試</div></div>`;
+  }
+}
+
+loadFolder('novels', 'novels-grid', 'novels-count');
+loadFolder('apps', 'apps-grid', 'apps-count');
+</script>
+</body>
+</html>
